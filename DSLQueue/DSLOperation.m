@@ -91,9 +91,10 @@
 
 - (void)markAsFinished {
     // Perform any custom completion blocks on the main thread
-    dispatch_sync(dispatch_get_main_queue(), ^(void) {
+    __block DSLOperation *blockSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^(void) {
         for (DSLOperationCompletionBlock completionBlock in self.mutableCompletionBlocks) {
-            completionBlock(self);
+            completionBlock(blockSelf);
         }
     });
 }
