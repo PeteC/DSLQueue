@@ -53,5 +53,6 @@
 
 - (BOOL)containsOperationWithIdentifier:(NSString*)identifier;
 - (void)cancelOperationWithIdentifier:(NSString*)identifier;
+- (void)cancelAllOperations;
 
 @end

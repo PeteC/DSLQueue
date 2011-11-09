@@ -118,6 +118,16 @@
     }
 }
 
+- (void)cancelAllOperations {
+    @synchronized(self) {
+        for (DSLOperation *operation in self.operations) {
+            [operation requestCancel];
+        }
+        [self.operations removeAllObjects];
+        [self.operationInProgress requestCancel];
+    }
+}
+
 
 #pragma mark - Private methods
 
