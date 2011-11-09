@@ -166,17 +166,13 @@
 
 - (DSLOperation*)queuedOperationWithIdentifier:(NSString*)identifier {
     // TODO change this to anything better than iterating through the array
-    __block DSLOperation *foundOperation = nil;
-    
-    [self.operations enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        DSLOperation *queuedOperation = obj;
+    for (DSLOperation *queuedOperation in self.operations) {
         if ([[queuedOperation identifier] isEqualToString:identifier]) {
-            foundOperation = queuedOperation;
-            *stop = YES;
+            return queuedOperation;
         }
-    }];
+    }
      
-    return foundOperation;
+    return nil;
 }
 
 - (void)startNextOperation {
