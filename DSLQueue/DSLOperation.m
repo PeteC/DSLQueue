@@ -91,10 +91,10 @@
 
 - (void)markAsFinished {
     // Perform any custom completion blocks on the main thread
-    __block DSLOperation *blockSelf = self;
+    NSArray *completionBlocksCopy = [[self.mutableCompletionBlocks copy] autorelease]; // Make a copy of the completion blocks as we'll be calling them asynchronously so otherwise they may be released as they're called
     dispatch_async(dispatch_get_main_queue(), ^(void) {
-        for (DSLOperationCompletionBlock completionBlock in self.mutableCompletionBlocks) {
-            completionBlock(blockSelf);
+        for (DSLOperationCompletionBlock completionBlock in completionBlocksCopy) {
+            completionBlock(self);
         }
     });
 }
