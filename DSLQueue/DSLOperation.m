@@ -42,7 +42,9 @@
 @end
 
 
-@implementation DSLOperation
+@implementation DSLOperation {
+	dispatch_queue_t __callbackQueue;
+}
 
 @synthesize cancelRequested=__cancelRequested;
 @synthesize identifier=__identifier;
@@ -73,6 +75,7 @@
 	if (self != nil) {
         __cancelRequested = NO;
 		__mutableCompletionBlocks = [[NSMutableArray alloc] init];
+		__callbackQueue = dispatch_get_current_queue();
 	}
 	
 	return self;
@@ -92,7 +95,7 @@
 - (void)markAsFinished {
     // Perform any custom completion blocks on the main thread
     __block DSLOperation *blockSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^(void) {
+    dispatch_async(__callbackQueue, ^(void) {
         for (DSLOperationCompletionBlock completionBlock in self.mutableCompletionBlocks) {
             completionBlock(blockSelf);
         }
