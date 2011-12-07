@@ -89,7 +89,7 @@
 		});
 	};
 	
-    [self.mutableCompletionBlocks addObject:wrappedBlock];
+    [self.mutableCompletionBlocks addObject:[[wrappedBlock copy] autorelease]];
 }
 
 - (void)copyCompletionBlocksFromOperation:(DSLOperation*)source {
