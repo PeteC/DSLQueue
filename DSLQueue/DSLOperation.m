@@ -79,7 +79,16 @@
 }
 
 - (void)addCompletionBlock:(DSLOperationCompletionBlock)block {
-    [self.mutableCompletionBlocks addObject:[[block copy] autorelease]];
+    DSLOperationCompletionBlock givenBlock = [[block copy] autorelease];
+    dispatch_queue_t callingQueue = dispatch_get_current_queue();
+
+    DSLOperationCompletionBlock wrappedBlock = ^(DSLOperation *operation) {
+        dispatch_async(callingQueue, ^{
+            givenBlock(operation);
+        });
+    };
+
+    [self.mutableCompletionBlocks addObject:[[wrappedBlock copy] autorelease]];
 }
 
 - (void)copyCompletionBlocksFromOperation:(DSLOperation*)source {
@@ -90,13 +99,10 @@
 }
 
 - (void)markAsFinished {
-    // Perform any custom completion blocks on the main thread
-    NSArray *completionBlocksCopy = [[self.mutableCompletionBlocks copy] autorelease]; // Make a copy of the completion blocks as we'll be calling them asynchronously so otherwise they may be released as they're called
-    dispatch_async(dispatch_get_main_queue(), ^(void) {
-        for (DSLOperationCompletionBlock completionBlock in completionBlocksCopy) {
-            completionBlock(self);
-        }
-    });
+    __block DSLOperation *blockSelf = self;
+    for (DSLOperationCompletionBlock completionBlock in self.mutableCompletionBlocks) {
+        completionBlock(blockSelf);
+    }
 }
 
 - (void)requestCancel {
