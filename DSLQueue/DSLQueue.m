@@ -37,6 +37,7 @@
 
 @property (retain) DSLOperation *operationInProgress;
 @property (retain) NSMutableArray *operations;
+@property (assign) BOOL paused;
 
 - (void)addOperationWithoutStarting:(DSLOperation*)operation prioritised:(BOOL)prioritised;
 - (DSLOperation*)queuedOperationWithIdentifier:(NSString*)identifier;
@@ -49,6 +50,7 @@
 
 @synthesize operationInProgress=__operationInProgress;
 @synthesize operations=__operations;
+@synthesize paused=__paused;
 
 
 #pragma mark - Memory management
@@ -69,6 +71,7 @@
 	self = [super init];
 	if (self != nil) {
 		__operations = [[NSMutableArray alloc] init];
+        __paused = NO;
 	}
 	
 	return self;
@@ -128,6 +131,15 @@
     }
 }
 
+- (void)pause {
+    self.paused = YES;
+}
+
+- (void)resume {
+    self.paused = NO;
+    [self startNextOperation];
+}
+
 
 #pragma mark - Private methods
 
@@ -176,12 +188,12 @@
 }
 
 - (void)startNextOperation {
-    if (self.operationInProgress != nil || self.operations.count == 0) {
-        return;
-    }
-    
-    // Setup the next operation
     @synchronized(self) {
+        if (self.operationInProgress != nil || self.operations.count == 0 || self.paused) {
+            return;
+        }
+    
+        // Setup the next operation
         self.operationInProgress = [self.operations objectAtIndex:0];
         [self.operations removeObjectAtIndex:0];
 
@@ -190,12 +202,12 @@
             self.operationInProgress = nil;
             [self startNextOperation];
         }];
-    }
 
-    // Start the opeation on a background thread
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT,0), ^(void) {
-        [self.operationInProgress performOperation];
-    });
+        // Start the opeation on a background thread
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT,0), ^(void) {
+            [self.operationInProgress performOperation];
+        });
+    }
 }
 
 

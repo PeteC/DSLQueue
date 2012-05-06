@@ -33,15 +33,15 @@
 #import "DSLOperation.h"
 
 
-@interface DSLQueue : NSObject {
-    
-}
+@interface DSLQueue : NSObject
+
+@property (assign, readonly, getter=isPaused) BOOL paused;
 
 // Designated initialiser
 - (id)init;
 
 
-// Adds an operation to the queue, marking as next to start
+// Adds an operation to the queue, marking as next to start. Equivalent to calling addOperations with prioritised set to YES
 - (void)addOperation:(DSLOperation*)operation;
 - (void)addOperations:(NSArray*)operations;
 
@@ -50,9 +50,12 @@
 - (void)addOperation:(DSLOperation*)operation prioritised:(BOOL)prioritised; 
 - (void)addOperations:(NSArray*)operations prioritised:(BOOL)prioritised;
 
-
 - (BOOL)containsOperationWithIdentifier:(NSString*)identifier;
 - (void)cancelOperationWithIdentifier:(NSString*)identifier;
 - (void)cancelAllOperations;
+
+// Pausing the queue prevents further operations from being started until the queue is resumed. It does not pause or cancel the operation currently in progress
+- (void)pause;
+- (void)resume;
 
 @end
